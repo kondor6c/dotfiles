@@ -37,9 +37,33 @@
 
 syntax enable
 colorscheme desert
+"colorscheme evening
 set ruler
 set nocompatible
 set ts=4
+set bg=dark
+set background=dark
+
+" Put plugins and dictionaries in this dir (also on Windows)
+let vimDir = '$HOME/.vim'
+let &runtimepath.=','.vimDir
+
+" I constantly found this annoying, but I should call commands from within vim
+" Keep undo history across sessions by storing it in a file
+" ref: https://stackoverflow.com/questions/5700389/using-vims-persistent-undo
+if has('persistent_undo')
+    let myUndoDir = expand(vimDir . '/undodir')
+    " Create dirs
+    call system('mkdir ' . vimDir)
+    call system('mkdir ' . myUndoDir)
+    let &undodir = myUndoDir
+    set undofile
+endif
+" https://news.ycombinator.com/item?id=18898523
+let s:undos = split(globpath(&undodir, '*'), "\n")
+call filter(s:undos, 'getftime(v:val) < localtime() - (60 * 60 * 24 * 90)')
+call map(s:undos, 'delete(v:val)')
+
 inoremap jj <Esc>
 if filereadable("~/.vimrc.d")
   for f in split(glob('~/.vimrc.d/*.vim'), '\n')

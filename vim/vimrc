@@ -1,9 +1,9 @@
+" Barebones, will work almost anywhere
 syntax on
-silent! runtime macros/matchit.vim
 set backspace=indent,eol,start
 set hidden
 set incsearch
 set laststatus=2
 set ruler
 set wildmenu
-colorscheme slate
+colorscheme desert
