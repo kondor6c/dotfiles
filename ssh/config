@@ -1,0 +1,78 @@
+# SSH config
+# | command                            | decription                           |
+# |:-----------------------------------|:-------------------------------------|
+# | ssh -R 2222:localhost:22 dest.sh   | Reverse tunnel, 2222 on dest for 22 l|
+# | ssh -D 2289 dest.sh                | SOCKS Proxy, 2289 local forwards to d|
+# | ssh -L 9091:db.dest.sh:3306        | 9091 open locally for 3306 on dest   |
+# | cat d.out | ssh dest "cat - > file"| send d.out and output to "file" on d |
+# | ssh -v -C dest.sh                  | will output how many bytes were saved|
+# | ssh -N dest.sh                     | don't execute a command, forwarding  |
+# | ssh dest cat ~/rfile |diff ~/file -| another read file example, diff rfile|
+# | ssh -t jump.sh final-dest.sh       | connect to final-dest through jump   |
+# | ssh -fX dest.sh firefox            | This will run firefox from dest local|
+# | ssh-keygen -R bad.host             | Remove bad.host from known_hosts     |
+# | 
+Include ~/.ssh/config.d/*
+
+#Global
+SendEnv LS_COLORS
+Ciphers aes128-ctr #might be fast, might be dis-allowed
+VisualHostKey yes #fun
+ControlMaster auto
+ControlPath ~/.ssh/C_%h # long hostnames could hit a character limit, careful
+ControlPersist 6h
+TCPKeepAlive no
+Compression yes
+ForwardAgent    yes
+GSSAPIDelegateCredentials no # most might not need GSSAPI aka kerberos
+GSSAPIAuthentication no
+ForwardX11Trusted yes
+# Sets a timeout interval in seconds after which if no data has been received from the server, ssh will send a message through the encrypted channel to request a response from the server. The default is 0, indicating that these messages will not be sent to the server. This option applies to protocol version 2 only.
+
+ServerAliveInterval 150
+ServerAliveCountMax 6
+
+# Sets a timeout interval in seconds after which if no data has been received from the client, sshd will send a message through the encrypted channel to request a response from the client. The default is 0, indicating that these messages will not be sent to the client. This option applies to protocol version 2 only.
+#ClientAliveInterval 120
+
+Host bitbucket.org
+  IdentityFile ~/.ssh/id_work_rsa
+Host 172.16.*
+  IdentitiesOnly yes
+Host 192.168.122.*
+  IdentitiesOnly yes
+Host *
+  UseRoaming no
+  HashKnownHosts no
+
+Host me
+Hostname        lazytree.us
+User            kondor6c
+ProxyCommand    ssh bastion -W %h:%p -q
+PreferredAuthentications password
+PubkeyAuthentication no
+
+Host horse
+Hostname        lazytree.us
+port            2222
+User            kondor6c
+ProxyCommand    ssh bastion -W %h:%p -q
+
+Host mail
+Hostname        mail.lazytree.us
+port            22
+User            kondor6c
+ProxyCommand    ssh bastion -W %h:%p -q
+
+#-f fork, -D full socks proxy
+Host IRC
+Hostname        mail.lazytree.us
+User            kondor6c
+ProxyCommand    ssh -f -D 48983 bastion -W %h:%p  
+PreferredAuthentications password
+
+Host fast-proxy
+Hostname  fast-bastion
+User            kfaulkne
+ProxyCommand ssh -f -N -q -D 5440 vpc-bastion
+

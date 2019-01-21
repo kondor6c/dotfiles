@@ -1,0 +1,16 @@
+#
+# | command    |
+# |------------|:-------------------------------------------------------------|
+# | git revert       | undo changes from a previous commit                          |
+# | git reset --hard HEAD~10 | Rollback 10 commit, deleting all modificaitons |
+# | git commit --ammend | Adds/removes changes STAGED to a previous commit    |
+# | git 
+
+[user]
+    name = Kevin Faulkner
+    email = kevin.faulkner@inmar.com
+	signingkey = 50248F48
+[gpg]
+	program = gpg2
+[alias]
+	push-ubranch = "push -u origin "

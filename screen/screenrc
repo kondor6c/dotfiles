@@ -1,0 +1,28 @@
+
+startup_message off
+vbell off
+defscrollback 10000
+altscreen on
+term screen-256color
+screen -t Shell1  1 bash
+screen -t Shell2  2 bash
+# or term rxvt-unicode-256color
+# Nice statusbar:
+# hardstatus string "%{= KW} %H [%`] %{= Kw}|%{-} %-Lw%{= bW}%n%f %t%{-}%+Lw %=%C%a %Y-%M-
+#
+# http://www.softpanorama.org/Utilities/Screen/screenrc_examples.shtml
+# Screen keys:
+# ctrl+a ? Displays commands and its defaults (VERY important)
+# ctrl+a : Enter to the command prompt of screen
+# ctrl+a " Window list
+# ctrl+a 0 opens window 0
+# ctrl+a A Rename the current window
+# ctrl+a a Sends ctrl+a to the current window
+# ctrl+a c Create a new window (with shell)
+# ctrl+a S Split current region into two regions
+# ctrl+a tab Switch the input focus to the next region
+# ctrl+a ctrl+a Toggle between current and previous region
+# ctrl+a Esc Enter Copy Mode (use enter to select a range of text)
+# ctrl+a ] Paste text
+# ctrl+a Q Close all regions but the current one
+# ctrl+a X Close the current region
