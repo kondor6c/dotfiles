@@ -42,40 +42,30 @@ HISTCONTROL=ignoreboth
 shopt -s histappend
 
 # for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
-HISTSIZE=2000
-HISTFILESIZE=4000
-HISTTIMEFORMAT="%Y/%m/%d %H:%M:%S  "
-HISTCONTROL=ignoredups
+export HISTSIZE=9000
+export HISTFILESIZE=12000
+export HISTTIMEFORMAT="%Y/%m/%d %H:%M:%S  "
+export HISTCONTROL=ignoredups:erasedups
 export PROMPT_COMMAND='history -a'
 
-# Aliases (quick) Functions are better
+# Aliases (quick) Functions are better, please be careful with these
 alias vi=vim
-alias ll='ls -alF'
+alias ll='ls -alF' #I almost never use ls commands, these are here for others
 alias la='ls -A'
 alias l='ls -CF'
+# https://www.digitalocean.com/community/questions/what-are-your-favorite-bash-aliases
+# If the last character of the alias value is a blank, then the next command 
+# word following the alias is also checked for alias expansion.
+# 
+alias sudo='sudo '
 alias time='/usr/bin/time'
-alias gpg='gpg2'
-export GOROOT=$HOME/workspace/go
-export GOPATH=$HOME/workspace/go/packages
-export PATH=$PATH:$GOROOT/bin:$HOME/workspace/bin/
-
-function ssh-gpg() {
-# so you can view what keys are loaded into gpg's ssh keyring
-# I need to add an argument -d, to delete a specified key, like ssh-add
-    grep -aoe "comment.*$" ~/.gnupg/private-keys-v1.d/*
-}
-
-function clear_buffc {
-    printf "Warning running super user command to clear cache/buffers\n"
-    read -p "Proceed? (y/b/c/n)" PROCEED_BUFFC
-    if [[ ${PROCEED_BUFFC} == "y" ]]; then
-        sudo echo 3 > /proc/sys/vm/drop-caches
-    elif [[ ${PROCEED_BUFFC} == "b" ]]; then
-        sudo echo 2 > /proc/sys/vm/drop-caches
-    elif [[ ${PROCEED_BUFFC} == "c" ]]; then
-        sudo echo 1 > /proc/sys/vm/drop-caches
-    fi
-}
+alias rsync='rsync -Phav --skip-compress=gz '
+#alias gpg='gpg2'
+#likely, GOROOT, would be incorrect, this is not portable
+#export GOROOT=$HOME/workspace/go
+export GOPATH=$HOME/workspace/go
+export GOBIN=$HOME/workspace/go/bin
+export PATH=$PATH:$GOPATH/bin:$HOME/workspace/bin/
 
 function helpy {
     case $1 in
@@ -115,11 +105,74 @@ function helpy {
             ;;
      esac
 }
+#function alert() {
+# Add an "alert" alias for long running commands.  Use like so:
+#   sleep 10; alert
+# I only disabled this because it was ruining vim's syntax highlighting, I have never used this alias/function
+# I am not so sure about 'alert' as the keyword, I would have thought there would be a conflict
+#  notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"
+#}
+function ssh-gpg() {
+# so you can view what keys are loaded into gpg's ssh keyring
+# I need to add an argument -d, to delete a specified key, like ssh-add
+    grep -aoe "comment.*$" ~/.gnupg/private-keys-v1.d/*
+}
 
-genpasswd() { 
-	local l=$1
-       	[ "$l" == "" ] && l=16
-      	tr -dc A-Za-z0-9_.,@^ < /dev/urandom | head -c ${l} | xargs 
+function reload_buffers() {
+    printf "Warning running super user command to clear cache/buffers\n"
+    read -p "Proceed? (y/b/c/n)" PROCEED_BUFFC
+    if [[ ${PROCEED_BUFFC} == "y" ]]; then
+        sudo echo 3 > /proc/sys/vm/drop_caches
+    elif [[ ${PROCEED_BUFFC} == "b" ]]; then
+        sudo echo 2 > /proc/sys/vm/drop_caches
+    elif [[ ${PROCEED_BUFFC} == "c" ]]; then
+        sudo echo 1 > /proc/sys/vm/drop_caches
+    fi
+}
+
+# set or unset AWS environment variable
+function aws_key_export() {
+  cred_arry=$(awk -v var=${1} 'c&&c--; { if (match($1, var)){ c=2 }}' ~/.aws/credentials |sed -e 's/ //g')
+  readarray cred_arry < <(awk -v var=${1} 'c&&c--; { if (match($1, var)){ c=2 }}' ~/.aws/credentials |sed -e 's/ //g')
+  
+  export AWS_ACCESS_KEY_ID=${cred_arry[0]:18}
+  export AWS_SECRET_ACCESS_KEY=${cred_arry[1]:22}
+}
+## Reloads! it doesn't seem like reload*... is used, or if it is, I don't
+# have the packages installed, so I am using it for many of my refresh commands
+function reload_tmux_env() {
+  eval $(tmux show-env -s |grep '^SSH_')
+}
+function reload_tmux_env() {
+  eval $(tmux show-env -s |grep '^SSH_')
+}
+
+function reload_gpg() {
+  gpg-connect-agent reloadagent /bye
+}
+
+function xtract_ab() {
+#extract adb backup one-liner found on SO
+  ( printf "\x1f\x8b\x08\x00\x00\x00\x00\x00" ; tail -c +25 backup.ab ) |  tar xfvz -
+}
+
+function xtract_rpm() {
+#extract adb backup one-liner found on SO
+  rpm2cpio ${1} | cpio -idmv
+}
+
+function reload_smux () {
+  find ~/.ssh -type s -name "C_*" -depth 1 -delete
+}
+function reload_disk () {
+  disk=$1
+  sudo "echo '- - -' > /sys/class/scsi_host/$disk_host/scan"
+}
+
+function genpasswd() { 
+  local l=$1
+  [ "$l" == "" ] && l=16
+  tr -dc A-Za-z0-9_.,@^ < /dev/urandom | head -c ${l} | xargs 
 }
 
 # check the window size after each command and, if necessary,
@@ -131,38 +184,45 @@ shopt -s checkwinsize
 #shopt -s globstar
 
 # make less more friendly for non-text input files, see lesspipe(1)
-[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+#[[ -x /usr/bin/lesspipe ]] && eval "$(SHELL=/bin/bash lesspipe)"
 
-# set variable identifying the chroot you work in (used in the prompt below)
-if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
-    debian_chroot=$(cat /etc/debian_chroot)
-fi
 
 # set a fancy prompt (non-color, unless we know we "want" color)
-case "$TERM" in
-    xterm-color|*-256color) color_prompt=yes;;
-esac
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
-
+if [[ -d $HOME/.nvm ]]; then
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
+fi
 # uncomment for a colored prompt, if the terminal has the capability; turned
 # off by default to not distract the user: the focus in a terminal window
 # should be on the output of commands, not on the prompt
 #force_color_prompt=yes
 
-if [ -n "$force_color_prompt" ]; then
-    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-	# We have color support; assume it's compliant with Ecma-48
-	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-	# a case would tend to support setf rather than setaf.)
-	color_prompt=yes
-    else
-	color_prompt=
-    fi
+if [[ -n "$force_color_prompt" || ${TERM} =~ "*-256color" || ${TERM} =~ "xterm-color" ]]; then
+  if [[ -x /usr/bin/tput ]] && tput setaf 1 >&/dev/null; then
+    # We have color support; assume it's compliant with Ecma-48
+    # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+    # a case would tend to support setf rather than setaf.)
+    color_prompt=yes
+  else
+    color_prompt=
+  fi
+fi
+
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+  test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+  alias ls='ls --color=auto'
+  alias grep='grep --color=auto'
+  alias fgrep='fgrep --color=auto'
+  alias egrep='egrep --color=auto'
+  # colored GCC warnings and errors
+  export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
 fi
 
 if [ "$color_prompt" = yes ]; then
-    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+    PS1='${e_chroot:+($e_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+elif [[ $(tmux list-panes |grep attached) ]]; then
+	PS1=$PS1'$( [ -n $TMUX ] && tmux setenv -g TMUX_PWD_$(tmux display -p "#D" | tr -d %) $PWD)'
 else
     PS1='\[\033[01;32m\]\u_1@\h:\[\033[01;34m\]\W\$ \[\033[00m\]'
 fi
@@ -171,39 +231,11 @@ unset color_prompt force_color_prompt
 # If this is an xterm set the title to user@host:dir
 case "$TERM" in
 xterm*|rxvt*)
-    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+    PS1="$PS1"
     ;;
 *)
     ;;
 esac
-
-# enable color support of ls and also add handy aliases
-if [ -x /usr/bin/dircolors ]; then
-    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-    alias ls='ls --color=auto'
-
-    alias grep='grep --color=auto'
-    alias fgrep='fgrep --color=auto'
-    alias egrep='egrep --color=auto'
-fi
-
-# colored GCC warnings and errors
-export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
-
-# some more ls aliases
-
-# Add an "alert" alias for long running commands.  Use like so:
-#   sleep 10; alert
-alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
-
-# Alias definitions.
-# You may want to put all your additions into a separate file like
-# ~/.bash_aliases, instead of adding them here directly.
-# See /usr/share/doc/bash-doc/examples in the bash-doc package.
-
-if [ -f ~/.bash_aliases ]; then
-    . ~/.bash_aliases
-fi
 
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
@@ -221,10 +253,18 @@ fi
 GPG_TTY=$(tty)
 export GPG_TTY
 
-if [ ! -S /run/user/1000/gnupg/S.gpg-agent.ssh ]; then
+if [ ! -S /run/user/${UID}/gnupg/S.gpg-agent.ssh ]; then
   eval $(gpg-agent --enable-ssh-support --sh --daemon )
-elif [ -z "$SSH_AUTH_SOCK" ]; then
-  export SSH_AUTH_SOCK=/run/user/1000/gnupg/S.gpg-agent.ssh
-  export SSH_ASKPASS=/usr/lib64/seahorse/seahorse-ssh-askpass
+#elif [[ "/run/user/${UID}/gnupg/S.gpg-agent.ssh" -ne "$SSH_AUTH_SOCK" ||"$SSH_AGENT_PID" -ne $(pgrep -nU ${UID} gpg-agent) ]]; then
+elif [[ "$SSH_AGENT_PID" -ne $(pgrep -nU ${UID} gpg-agent) || -S /run/user/${UID}/gnupg/S.gpg-agent.ssh ]]; then
+  export SSH_AUTH_SOCK=/run/user/${UID}/gnupg/S.gpg-agent.ssh
+  export SSH_PID_OLD=${SSH_AGENT_PID}
+  export SSH_AGENT_PID=$(pgrep -u ${USER} gpg-agent)
+  export SSH_ASKPASS=/usr/bin/pinentry
+  pkill --signal 3 -oU ${UID} gpg-agent
+elif [[ -S ~/.gnupg/S.gpg-agent.extra && ! -S /run/user/${UID}/gnupg/S.gpg-agent.ssh ]]; then
+  export SSH_AUTH_SOCK=~/.gnupg/S.gpg-agent.extra
+else 
+  eval $(gpg-agent --enable-ssh-support --sh --daemon|tee ~/.gnupg/shell ) 
 fi
 
