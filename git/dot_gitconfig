@@ -1,16 +1,43 @@
 #
 # | command    |
 # |------------|:-------------------------------------------------------------|
-# | git revert       | undo changes from a previous commit                          |
+# | git revert       | undo changes from a previous commit                    |
 # | git reset --hard HEAD~10 | Rollback 10 commit, deleting all modificaitons |
 # | git commit --ammend | Adds/removes changes STAGED to a previous commit    |
-# | git 
+# | pretty formats | |
+# | %cn | committer name | %h | abbreviated commit hash | %ad | author date |
+# | %d | ref names (decorate) | %s | subject | %cr | committer date | 
+# | %an | author name | %aD | author date RFC2822 | %ar | author date |
 
 [user]
-    name = Kevin Faulkner
-    email = kevin.faulkner@inmar.com
-	signingkey = 50248F48
+	name = Kevin Faulkner
+	email = kondor6c@lazytree.us
+	signingkey = C5D5F4BED24A4A02
 [gpg]
 	program = gpg2
+[diff "gpg"]
+    textconv = gpg2 --use-agent -q --batch --decrypt
+[color]
+	diff = auto
+	status = auto
+	branch = auto
+	ui = true
+[rebase]
+	autosquash = true
+[core]                 
+	excludesfile = ~/.local/git/global_git_ignore
+	editor = vim
 [alias]
 	push-ubranch = "push -u origin "
+	unpushed = log --branches --not --remotes\n  --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset\n  %s %Cgreen(%cr) %C(bold blue)%Creset' --abbrev-commit
+	undo = reset --hard HEAD~1
+	lds = log --color --graph --pretty=format:\n  '%Cred%h% %ad%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)\n  %Creset' --abbrev-commit --decorate --date=short
+	lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit --date=relative
+	lol = log --graph --decorate --pretty=oneline --abbrev-commit
+	longbranch = log --graph --branches
+    du = count-objects -vH
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
