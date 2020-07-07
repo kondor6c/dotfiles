@@ -1,0 +1,7 @@
+[Unit]
+Description=Start GPG Agent for user %u
+[Service]
+Type=simple
+ExecStart=/usr/bin/gpg-agent --enable-ssh-support --daemon
+[Install]
+WantedBy=default.target

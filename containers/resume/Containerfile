@@ -1,0 +1,10 @@
+FROM fedora:latest
+LABEL usage=
+
+RUN dnf install -y -q chromium bzip2 wkhtmltopdf nodejs npm && \
+    useradd nonroot 
+USER nonroot
+ENV PATH=$PATH:$HOME/node_modules/.bin/
+WORKDIR /home/nonroot/
+RUN  npm install resume-cli jsonresume-theme-kendall jsonresume-theme-stackoverflow jsonresume-theme-eloquent jsonresume-theme-papirus --unsafe-perm=true --allow-root && \
+    printf '#!/bin/bash\nfor theme in eloquent papirus minimal modern kendall stackoverflow ; do mkdir ${theme} ; resume export /tmp/${theme}/${theme}-$(date -I) --format pdf --theme ${theme} &&  hackmyresume build resume.json TO /tmp/${theme}/resume.all -t $HOME/node_modules/jsonresume-theme-${theme} ;done' > run.sh

@@ -1,0 +1,20 @@
+FROM fedora
+ENV HUGO_BASE_URL http://localhost:1313
+ENV SITE_DIR '/usr/share/blog'
+
+RUN dnf -y install golang && dnf clean all
+
+RUN git clone --depth=1 https://github.com/gohugoio/hugo.git && \
+    cd hugo && go install && cd - ; \
+    mkdir ${SITE_DIR}
+WORKDIR ${SITE_DIR}
+
+# Expose default hugo port
+EXPOSE 1313
+
+# Automatically build site
+ONBUILD ADD site/ ${SITE_DIR}
+ONBUILD RUN hugo -d /usr/share/nginx/html/
+
+# By default, serve site
+CMD hugo server -b ${HUGO_BASE_URL} --bind=0.0.0.0

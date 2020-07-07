@@ -1,0 +1,25 @@
+[Unit]
+Description=Container for rclone
+Requires=devops-check-ports.service devops-check-fs.service docker-networks.service
+After=container-rclone-config.service
+
+[Service]
+Restart=always
+EnvironmentFile=-/etc/container/config/rclone.env
+ExecStartPre=/usr/bin/sha1sum -c /etc/container/config/rclone.env.sum
+ExecStart=/usr/bin/docker run --env-file=/etc/container/config/rclone-app.env \
+          --label-file=/etc/container/config/rclone.label \ 
+          --cap-drop $CAP_DEL --cap-add $CAP_ADD \
+          -c $CPU --cpus $CPU_NUM -m $MEM --blkio-weight $BLK_W \
+          --link $LINKED --net $NET \
+          -w $PWD -p $H_PORT1:$C_PORT1 -v $H_VOL1:$C_VOL1 $MORE_VOLS $MORE_PORTS \
+          --mount type=tmpfs,tmpfs-size=32M destination=/secrets \
+          $ADDITIONAL_OPT \
+          --rm --log-driver journald -n $C_NAME-$H_PORT1 $C_IMAGE_VERSION
+
+ExecStop=/usr/bin/docker stop -t 10 $C_NAME
+KillMode=none
+Type=forking
+PIDFile=/run/containers/$C_IMAGE-$H_PORT1
+[Install]
+WantedBy=app-run.target

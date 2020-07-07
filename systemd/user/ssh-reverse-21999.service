@@ -1,0 +1,13 @@
+[Unit]
+Description=Setup a secure tunnel to %I
+After=network.target
+Requires=gpg-agent-ssh.service
+ConditionPathExists=%t/.ssh/id_ed25519
+[Service]
+ExecStart=/usr/bin/ssh -f -N -T -R21999:localhost:22 mail.lazytree.us
+
+# Restart every >2 seconds to avoid StartLimitInterval failure
+RestartSec=5
+Restart=always
+[Install]
+WantedBy=multi-user.target

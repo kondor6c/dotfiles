@@ -1,0 +1,27 @@
+[Unit]
+Description=Container for rclone
+Requires=devops-check-ports.service devops-check-fs.service docker-networks.service
+After=container-rclone-config.service
+
+[Service]
+Restart=always
+EnvironmentFile=-/etc/container/config/rclone.env
+ExecStartPre=/usr/bin/docker 
+ExecStart=/usr/bin/docker network create -d bridge  \
+          --subnet=$BR_SUBNET/$BR_CIDR \
+          --ingress \
+          --opt com.docker.network.driver.mtu=9216 \
+          --opt encrypted=true \
+          app-net-default
+ExecStartPost=/usr/bin/docker network create -d overlay  \
+          --subnet=$O_SUBNET/$O_CIDR \
+          --ingress \
+          --opt com.docker.network.driver.mtu=9216 \
+          --opt encrypted=true \
+          app-net-overlay
+
+ExecStop=/usr/bin/docker stop -t 10 $C_NAME
+KillMode=none
+Type=simple
+[Install]
+WantedBy=app-run.target

@@ -1,0 +1,9 @@
+[Unit]
+Description=start GPG Agent for both GPG and SSH
+ConditionPathExists=!/run/user/%U/gnupg/S.gpg-agent
+
+[Path]
+Unit=gnupg-agent.service
+
+[Install]
+WantedBy=multi-user.target
