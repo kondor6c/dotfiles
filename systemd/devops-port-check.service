@@ -1,0 +1,10 @@
+[Unit]
+Description=Container for rclone
+Wants=docker-networks.service
+After=container-rclone-config.service
+
+[Service]
+Restart=always
+EnvironmentFile=
+
+/etc/container/config/rclone.env

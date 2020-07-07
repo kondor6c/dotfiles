@@ -1,0 +1,14 @@
+[Unit]
+Description=Setup a secure tunnel to %I
+After=network.target
+Requires=gpg-agent-ssh.service
+StandardInput=socket
+[Service]
+ExecStart=/usr/bin/ssh tunnel-socks-proxy
+
+# Restart every >2 seconds to avoid StartLimitInterval failure
+RestartSec=5
+Restart=always
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,8 @@
+[Unit]
+Description=On Demand Socks proxy into Work
+
+[Socket]
+ListenStream=9119
+#Accept=true
+[Install]
+WantedBy=sockets.target

@@ -1,0 +1,11 @@
+[Unit]
+Description=regenerate container if file changes
+ConditionPathExists=!/run/containers/block
+
+[Path]
+PathChanged=/etc/containers/config/rclone
+PathExistsGlob=/etc/containers/config/rclone.d/*
+Unit=container-env.service
+
+[Install]
+WantedBy=app-run.target

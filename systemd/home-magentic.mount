@@ -1,0 +1,13 @@
+[Unit]
+Description=magnetic storage to not stress enduarance of SSD to %t/mnt
+Conflicts=umount.target
+After=local-fs.target
+
+[Mount]
+What=/dev/disk/by-id/ata-TOSHIBA_DT01ACA050_18RUSDBKS
+Where=/home/kondor6c/mnt
+Type=xfs
+Options=inode64,noatime
+
+[Install]
+WantedBy=multi-user.target
