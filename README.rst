@@ -1,4 +1,7 @@
-## Various Dotfiles and Configs
+############################
+Various Dotfiles and Configs
+############################
+
 This should be mostly self-explainitory, but I have recieved a few requsts to
 post my configurations and I have been meaning to for some time.
 

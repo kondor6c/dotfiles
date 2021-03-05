@@ -1,0 +1,10 @@
+[Unit]
+Description=run go doc server
+StandardInput=socket
+[Service]
+Environment=GOPATH=%h/workspace/go
+ExecStart=$GOPATH/godoc -url="localhost:6534"
+
+[Install]
+WantedBy=multi-user.target
+

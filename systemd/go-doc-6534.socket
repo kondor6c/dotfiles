@@ -1,0 +1,8 @@
+[Unit]
+Description=On Demand offline godocs
+
+[Socket]
+ListenStream=6534
+#Accept=true
+[Install]
+WantedBy=sockets.target
