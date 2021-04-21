@@ -1,2 +1,4 @@
+# table columns and info: PRAGMA table_info(network);
+# show tables SELECT * FROM sqlite_master WHERE type='table';
 .headers on
 .mode column
